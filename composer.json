@@ -1,8 +1,9 @@
 {
     "name": "makewp/theme",
     "description": "Make WordPress themes, better.",
-    "version": "0.1.1",
     "type": "library",
+    "version": "0.1.2",
+    "license": "MIT",
     "autoload": {
         "psr-4": {
             "Makewp\\Theme\\": "src/"

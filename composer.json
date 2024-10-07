@@ -1,0 +1,17 @@
+{
+    "name": "makewp/theme",
+    "description": "Make WordPress themes, better.",
+    "type": "library",
+    "autoload": {
+        "psr-4": {
+            "Makewp\\Theme\\": "src/"
+        }
+    },
+    "authors": [
+        {
+            "name": "Taylor Gorman",
+            "email": "taylor@thegorman.group"
+        }
+    ],
+    "require": {}
+}

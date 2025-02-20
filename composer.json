@@ -1,19 +1,19 @@
 {
-    "name": "makewp/theme",
-    "description": "Make WordPress themes, better.",
-    "type": "library",
-    "version": "0.1.2",
-    "license": "MIT",
-    "autoload": {
-        "psr-4": {
-            "Makewp\\Theme\\": "src/"
-        }
-    },
-    "authors": [
-        {
-            "name": "Taylor Gorman",
-            "email": "taylor@thegorman.group"
-        }
-    ],
-    "require": {}
+  "name": "makewp/theme",
+  "description": "Make WordPress themes, better.",
+  "type": "library",
+  "version": "0.1.2",
+  "license": "MIT",
+  "autoload": {
+    "psr-4": {
+      "Makewp\\Theme\\": "src/"
+    }
+  },
+  "authors": [
+    {
+      "name": "Taylor Gorman",
+      "email": "taylor@thegorman.group"
+    }
+  ],
+  "require": {}
 }

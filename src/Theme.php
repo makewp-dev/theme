@@ -1,12 +1,34 @@
 <?php
 namespace MakeWP\Theme;
 
+function all()
+{
+  functions();
+  blocks();
+  style();
+}
+
 /**
- * require() every PHP file in {theme}/functions
+ * wp_enqueue_style() style.css
+ * 
+ * Dont't silently fail bc style.css is required for WordPress theme
  */
-function require_functions_in_folder()
+function style()
+{
+  add_action( 'wp_enqueue_scripts', function(){
+    wp_enqueue_style( get_template(), get_stylesheet_uri() );
+  } );
+}
+
+/**
+ * require_once() every PHP file in {theme}/functions
+ */
+function functions()
 {
   $dir_path = get_theme_file_path( '/functions' );
+  // Silently fail if directory doesn't exist
+  if ( ! is_dir( $dir_path ) ) return;
+  // Or if it does..
   foreach( scandir( $dir_path ) as $filename )
   {
     $file_path = $dir_path . '/' . $filename;
@@ -14,7 +36,7 @@ function require_functions_in_folder()
       is_file( $file_path )
       && substr( $file_path, -4 ) === '.php'
     ){
-      require $file_path;
+      require_once $file_path;
     }
   }
 }
@@ -29,10 +51,13 @@ function require_functions_in_folder()
  * TO DO:
  * - Allow passing different folder name or folder path altogether.
  */
-function register_blocks_in_folder()
+function blocks()
 {
   add_action( 'init', function() {
     $dir_path = get_theme_file_path( '/blocks' );
+    // Silently fail if directory doesn't exist
+    if ( ! is_dir( $dir_path ) ) return;
+    // Or if it does..
     foreach( scandir( $dir_path ) as $filename )
     {
       $file_path = $dir_path . '/' . $filename;

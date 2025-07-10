@@ -19,37 +19,88 @@ function build()
 {
   if (!defined('WP_CLI')) return;
 
-  \WP_CLI::add_command('theme build', function () {
-    echo "Generating theme.json...\n";
+  \WP_CLI::add_command('theme build', function ($args, $assoc_args) {
+    $watch = isset($assoc_args['watch']);
     
-    function soft_require(string $file) {
-      if (!file_exists($file)) return [];
+    function build_theme_json() {
+      echo "Generating theme.json...\n";
       
-      $output = shell_exec("node -e \"import config from '$file'; console.log(JSON.stringify(config));\"");
-      return json_decode($output, true) ?? [];
+      function soft_require(string $file) {
+        if (!file_exists($file)) return [];
+        
+        $output = shell_exec("node -e \"import config from '$file'; console.log(JSON.stringify(config));\"");
+        return json_decode($output, true) ?? [];
+      }
+      
+      $basePath = get_template_directory() . '/config/';
+      $settings = soft_require($basePath . 'theme.settings.js');
+      $styles = soft_require($basePath . 'theme.styles.js');
+      $templateParts = soft_require($basePath . 'theme.templateParts.js');
+      $customTemplates = soft_require($basePath . 'theme.customTemplates.js');
+      
+      $theme = [
+        '$schema' => 'https://schemas.wp.org/trunk/theme.json',
+        'version' => 3,
+        'settings' => $settings,
+        'styles' => $styles,
+        'templateParts' => $templateParts,
+        'customTemplates' => $customTemplates,
+      ];
+      
+      $themeJson = json_encode($theme, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES);
+      
+      if (file_put_contents(get_template_directory() . '/theme.json', $themeJson) === false) {
+        \WP_CLI::error("Error writing theme.json");
+        return false;
+      } else {
+        \WP_CLI::success("theme.json generated successfully.");
+        return true;
+      }
     }
     
-    $basePath = get_template_directory() . '/config/';
-    $settings = soft_require($basePath . 'theme.settings.js');
-    $styles = soft_require($basePath . 'theme.styles.js');
-    $templateParts = soft_require($basePath . 'theme.templateParts.js');
-    $customTemplates = soft_require($basePath . 'theme.customTemplates.js');
+    // Initial build
+    build_theme_json();
     
-    $theme = [
-      '$schema' => 'https://schemas.wp.org/trunk/theme.json',
-      'version' => 3,
-      'settings' => $settings,
-      'styles' => $styles,
-      'templateParts' => $templateParts,
-      'customTemplates' => $customTemplates,
-    ];
-    
-    $themeJson = json_encode($theme, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES);
-    
-    if (file_put_contents(get_template_directory() . '/theme.json', $themeJson) === false) {
-      \WP_CLI::error("Error writing theme.json");
-    } else {
-      \WP_CLI::success("theme.json generated successfully.");
+    if ($watch) {
+      echo "\nWatching for changes in config files...\n";
+      echo "Press Ctrl+C to stop watching.\n\n";
+      
+      $configPath = get_template_directory() . '/config/';
+      $watchedFiles = [
+        $configPath . 'theme.settings.js',
+        $configPath . 'theme.styles.js', 
+        $configPath . 'theme.templateParts.js',
+        $configPath . 'theme.customTemplates.js'
+      ];
+      
+      $lastModified = [];
+      
+      // Initialize last modified times
+      foreach ($watchedFiles as $file) {
+        $lastModified[$file] = file_exists($file) ? filemtime($file) : 0;
+      }
+      
+      while (true) {
+        $changed = false;
+        
+        foreach ($watchedFiles as $file) {
+          if (file_exists($file)) {
+            $currentModified = filemtime($file);
+            if ($currentModified > $lastModified[$file]) {
+              $changed = true;
+              $lastModified[$file] = $currentModified;
+              echo "Change detected in " . basename($file) . "\n";
+            }
+          }
+        }
+        
+        if ($changed) {
+          build_theme_json();
+        }
+        
+        // Sleep for 1 second before checking again
+        sleep(1);
+      }
     }
   });
 }

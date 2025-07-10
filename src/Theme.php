@@ -13,30 +13,62 @@ function all()
 }
 
 /**
- * 
+ * Register WP-CLI commands for theme building
  */
 function build()
 {
   if (!defined('WP_CLI')) return;
 
-  \WP_CLI::add_command('theme build', function ($args, $assoc_args) {
+  add_action('cli_init', function() {
+    \WP_CLI::add_command('makewp build', 'MakeWP\Theme\BuildCommand');
+  });
+}
+
+/**
+ * WP-CLI command class for building theme.json
+ */
+class BuildCommand
+{
+  /**
+   * Build theme.json from config files
+   *
+   * ## OPTIONS
+   *
+   * [--watch]
+   * : Watch for changes in config files and rebuild automatically
+   *
+   * ## EXAMPLES
+   *
+   *     wp makewp build
+   *     wp makewp build --watch
+   *
+   * @param array $args
+   * @param array $assoc_args
+   */
+  public function __invoke($args, $assoc_args)
+  {
     $watch = isset($assoc_args['watch']);
     
-    function build_theme_json() {
-      echo "Generating theme.json...\n";
-      
-      function soft_require(string $file) {
-        if (!file_exists($file)) return [];
-        
-        $output = shell_exec("node -e \"import config from '$file'; console.log(JSON.stringify(config));\"");
-        return json_decode($output, true) ?? [];
-      }
-      
+    if ($watch) {
+      $this->watch_and_build();
+    } else {
+      $this->build_theme_json();
+    }
+  }
+  
+  /**
+   * Build theme.json from config files
+   */
+  private function build_theme_json()
+  {
+    \WP_CLI::log('Generating theme.json...');
+    
+    try {
       $basePath = get_template_directory() . '/config/';
-      $settings = soft_require($basePath . 'theme.settings.js');
-      $styles = soft_require($basePath . 'theme.styles.js');
-      $templateParts = soft_require($basePath . 'theme.templateParts.js');
-      $customTemplates = soft_require($basePath . 'theme.customTemplates.js');
+      $settings = $this->soft_require($basePath . 'theme.settings.js');
+      $styles = $this->soft_require($basePath . 'theme.styles.js');
+      $templateParts = $this->soft_require($basePath . 'theme.templateParts.js');
+      $customTemplates = $this->soft_require($basePath . 'theme.customTemplates.js');
       
       $theme = [
         '$schema' => 'https://schemas.wp.org/trunk/theme.json',
@@ -49,60 +81,108 @@ function build()
       
       $themeJson = json_encode($theme, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES);
       
-      if (file_put_contents(get_template_directory() . '/theme.json', $themeJson) === false) {
-        \WP_CLI::error("Error writing theme.json");
+      if ($themeJson === false) {
+        \WP_CLI::error('Failed to encode theme.json');
         return false;
-      } else {
-        \WP_CLI::success("theme.json generated successfully.");
-        return true;
       }
+      
+      $themeJsonPath = get_template_directory() . '/theme.json';
+      
+      if (file_put_contents($themeJsonPath, $themeJson) === false) {
+        \WP_CLI::error('Failed to write theme.json');
+        return false;
+      }
+      
+      \WP_CLI::success('theme.json generated successfully.');
+      return true;
+      
+    } catch (\Exception $e) {
+      \WP_CLI::error('Error building theme.json: ' . $e->getMessage());
+      return false;
+    }
+  }
+  
+  /**
+   * Safely require a JavaScript config file and return its contents
+   */
+  private function soft_require(string $file): array
+  {
+    if (!file_exists($file)) {
+      return [];
+    }
+    
+    try {
+      $output = shell_exec("node -e \"import config from '$file'; console.log(JSON.stringify(config));\"");
+      
+      if ($output === null) {
+        \WP_CLI::warning("Failed to execute Node.js for file: " . basename($file));
+        return [];
+      }
+      
+      $decoded = json_decode($output, true);
+      
+      if (json_last_error() !== JSON_ERROR_NONE) {
+        \WP_CLI::warning("Failed to parse JSON from " . basename($file) . ": " . json_last_error_msg());
+        return [];
+      }
+      
+      return $decoded ?? [];
+      
+    } catch (\Exception $e) {
+      \WP_CLI::warning("Error processing " . basename($file) . ": " . $e->getMessage());
+      return [];
+    }
+  }
+  
+  /**
+   * Watch for changes in config files and rebuild automatically
+   */
+  private function watch_and_build()
+  {
+    \WP_CLI::log('Watching for changes in config files...');
+    \WP_CLI::log('Press Ctrl+C to stop watching.');
+    \WP_CLI::log('');
+    
+    $configPath = get_template_directory() . '/config/';
+    $watchedFiles = [
+      $configPath . 'theme.settings.js',
+      $configPath . 'theme.styles.js', 
+      $configPath . 'theme.templateParts.js',
+      $configPath . 'theme.customTemplates.js'
+    ];
+    
+    $lastModified = [];
+    
+    // Initialize last modified times
+    foreach ($watchedFiles as $file) {
+      $lastModified[$file] = file_exists($file) ? filemtime($file) : 0;
     }
     
     // Initial build
-    build_theme_json();
+    $this->build_theme_json();
     
-    if ($watch) {
-      echo "\nWatching for changes in config files...\n";
-      echo "Press Ctrl+C to stop watching.\n\n";
+    while (true) {
+      $changed = false;
       
-      $configPath = get_template_directory() . '/config/';
-      $watchedFiles = [
-        $configPath . 'theme.settings.js',
-        $configPath . 'theme.styles.js', 
-        $configPath . 'theme.templateParts.js',
-        $configPath . 'theme.customTemplates.js'
-      ];
-      
-      $lastModified = [];
-      
-      // Initialize last modified times
       foreach ($watchedFiles as $file) {
-        $lastModified[$file] = file_exists($file) ? filemtime($file) : 0;
-      }
-      
-      while (true) {
-        $changed = false;
-        
-        foreach ($watchedFiles as $file) {
-          if (file_exists($file)) {
-            $currentModified = filemtime($file);
-            if ($currentModified > $lastModified[$file]) {
-              $changed = true;
-              $lastModified[$file] = $currentModified;
-              echo "Change detected in " . basename($file) . "\n";
-            }
+        if (file_exists($file)) {
+          $currentModified = filemtime($file);
+          if ($currentModified > $lastModified[$file]) {
+            $changed = true;
+            $lastModified[$file] = $currentModified;
+            \WP_CLI::log('Change detected in ' . basename($file));
           }
         }
-        
-        if ($changed) {
-          build_theme_json();
-        }
-        
-        // Sleep for 1 second before checking again
-        sleep(1);
       }
+      
+      if ($changed) {
+        $this->build_theme_json();
+      }
+      
+      // Sleep for 1 second before checking again
+      sleep(1);
     }
-  });
+  }
 }
 
 /**

@@ -1,23 +1,57 @@
 <?php
 namespace MakeWP\Theme;
 
+/**
+ * 
+ */
 function all()
 {
+  build();
   functions();
   blocks();
   style();
 }
 
 /**
- * wp_enqueue_style() style.css
  * 
- * Dont't silently fail bc style.css is required for WordPress theme
  */
-function style()
+function build()
 {
-  add_action( 'wp_enqueue_scripts', function(){
-    wp_enqueue_style( get_template(), get_stylesheet_uri() );
-  } );
+  if (!defined('WP_CLI')) return;
+
+  \WP_CLI::add_command('theme build', function () {
+    echo "Generating theme.json...\n";
+    
+    function soft_require(string $file) {
+      if (!file_exists($file)) return [];
+      
+      $output = shell_exec("node -e \"import config from '$file'; console.log(JSON.stringify(config));\"");
+      return json_decode($output, true) ?? [];
+    }
+    
+    $basePath = get_template_directory() . '/config/';
+    $settings = soft_require($basePath . 'theme.settings.js');
+    $styles = soft_require($basePath . 'theme.styles.js');
+    $templateParts = soft_require($basePath . 'theme.templateParts.js');
+    $customTemplates = soft_require($basePath . 'theme.customTemplates.js');
+    
+    $theme = [
+      '$schema' => 'https://schemas.wp.org/trunk/theme.json',
+      'version' => 3,
+      'settings' => $settings,
+      'styles' => $styles,
+      'templateParts' => $templateParts,
+      'customTemplates' => $customTemplates,
+    ];
+    
+    $themeJson = json_encode($theme, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES);
+    
+    if (file_put_contents(get_template_directory() . '/theme.json', $themeJson) === false) {
+      \WP_CLI::error("Error writing theme.json");
+    } else {
+      \WP_CLI::success("theme.json generated successfully.");
+    }
+  });
 }
 
 /**
@@ -67,5 +101,18 @@ function blocks()
         register_block_type( $file_path );
       }
     }
+  } );
+}
+
+/**
+ * wp_enqueue_style() style.css
+ * WordPress doesn't do this by default.
+ * 
+ * Doesn't silently fail bc style.css is a required file for every WordPress theme
+ */
+function style()
+{
+  add_action( 'wp_enqueue_scripts', function(){
+    wp_enqueue_style( get_template(), get_stylesheet_uri() );
   } );
 }

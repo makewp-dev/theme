@@ -4,12 +4,21 @@
   "type": "library",
   "version": "0.1.2",
   "license": "MIT",
+  "keywords": [
+    "wordpress",
+    "wordpress-theme"
+  ],
+  "homepage": "https://makewp-dev.github.io/theme",
+  "support": {
+    "issues": "https://github.com/makewp-dev/theme/issues",
+    "source": "https://github.com/makewp-dev/theme"
+  },
   "autoload": {
     "psr-4": {
       "MakeWP\\Theme\\": "src/"
     },
     "files": [
-      "src/Theme.php"
+      "src/functions.php"
     ]
   },
   "authors": [
@@ -18,5 +27,13 @@
       "email": "taylor@thegorman.group"
     }
   ],
-  "require": {}
+  "require": {
+    "php": ">=7.4"
+  },
+  "config": {
+    "sort-packages": true,
+    "optimize-autoloader": true
+  },
+  "minimum-stability": "stable",
+  "prefer-stable": true
 }

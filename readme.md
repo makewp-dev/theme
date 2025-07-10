@@ -4,7 +4,7 @@
 
 ## Usage
 
-### `functions()`
+### `require_functions()`
 
 The goal is to code-split `functions.php`. Typically, `functions.php` contains anything and everything. But we want to be tidy. And we don't need a `functions.php` with lines and lines of `require`s when we can access the file system.
 
@@ -12,7 +12,7 @@ The goal is to code-split `functions.php`. Typically, `functions.php` contains a
 // {your-theme}/functions.php
 <?php
 require_once 'vendor/autoload.php';
-\MakeWP\Theme\functions();
+\MakeWP\Theme\require_functions();
 ```
 
 ```php
@@ -27,15 +27,15 @@ You should now see "functions/test.php" in your browser.
 
 I mean, but like, cache, right?
 
-### `blocks()`
+### `register_blocks()`
 
-Same as `functions()`, but `register_block_type()`'s all directories inside.
+Same as `require_functions()`, but `register_block_type()`'s all directories inside.
 
 ```php
 // {your-theme}/functions.php
 <?php
 require_once 'vendor/autoload.php';
-\MakeWP\Theme\blocks();
+\MakeWP\Theme\register_blocks();
 ```
 
 ```json
@@ -45,7 +45,7 @@ require_once 'vendor/autoload.php';
 }
 ```
 
-### `style()`
+### `enqueue_style()`
 
 `style.css` is required for all WordPress themes, but isn't automatically enqueued as a stylesheet. Let's do that for us.
 
@@ -53,7 +53,7 @@ require_once 'vendor/autoload.php';
 // {your-theme}/functions.php
 <?php
 require_once 'vendor/autoload.php';
-\MakeWP\Theme\style();
+\MakeWP\Theme\enqueue_style();
 ```
 
 ### `all()`

@@ -11,4 +11,4 @@ function build_theme()
   add_action('cli_init', function() {
     \WP_CLI::add_command('makewp build', 'MakeWP\Theme\BuildCommand');
   });
-} 
+}

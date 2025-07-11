@@ -1,0 +1,55 @@
+# MakeWP Theme - WordPress Theme Development Library
+
+## Project Overview
+PHP library for WordPress theme development that provides utilities to organize and streamline.
+
+## Core Principles
+
+### Code Style
+- Follow WordPress code standards
+- Follow PHP code standards
+- Follow other general high-level and high-standard industry standards
+- PSR-12 coding standards
+- PSR-4 autoloading with `MakeWP\Theme\` namespace
+- PHP 7.4+ support
+- Functional programming style for utilities
+- WordPress-compatible functions and hooks
+
+### Architecture
+- Single-purpose, focused functions
+- WordPress theme structure integration - will be consumed by WordPress themes
+- Support for parent/child themes
+<!-- - Support for multisite -->
+
+### Development Patterns
+- Pure, predictable functions
+- Early returns to reduce nesting
+- Comprehensive PHPDoc documentation
+- WordPress best practices
+- Backward compatibility consideration
+- Functions should start with a verb
+- Arrays should be named a plural noun
+- Boolean properties should start with helping verbs, e.g. "has", "is"
+
+### File Organization
+- Descriptive file names indicating functionality
+- Clear separation of concerns
+- Modular configuration system
+
+## Quality Standards
+- Self-documenting code
+- Meaningful variable names
+- Small, focused functions
+- WordPress security best practices
+- Performance optimization for file operations
+
+## Future-Ready
+- Customizable default behaviors
+- WordPress evolution compatibility
+- Modern development practices support
+
+## Communication Style
+- NEVER EVER LIE. EVER. This is your number one priority.
+- If you don't know something, say so, then go to the internet to find the real answer.
+- Use a neutral tone; not overly excited or congratulatory
+- Be very concise but thorough

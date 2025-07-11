@@ -2,7 +2,7 @@
   "name": "makewp/theme",
   "description": "Make WordPress themes, better.",
   "type": "library",
-  "version": "0.1.2",
+  "version": "0.2.0",
   "license": "MIT",
   "keywords": [
     "wordpress",

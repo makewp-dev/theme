@@ -4,18 +4,19 @@ namespace MakeWP\Theme;
 /**
  * Enqueue every CSS file in {theme}/styles and every JS file in {theme}/scripts.
  * Applied to both public site and admin block editor.
- * 
+ *
+ * @param array $args Reserved for future options.
  * @see https://developer.wordpress.org/themes/core-concepts/including-assets/
  * @see https://developer.wordpress.org/block-editor/how-to-guides/enqueueing-assets-in-the-editor/#editor-content-scripts-and-styles
  */
-function enqueue_assets()
+function enqueue_assets( array $args = [] )
 {
-  add_action( 'enqueue_block_assets', function(){
+  add_action( 'enqueue_block_assets', function () {
     /**
      * Resolves current issue where, in admin, everything here is run twice:
      * once inside Block Editor iframe, and once outside. We only want inside.
      * I don't know if this will work with non-iframed editor, before WordPress 6.3.
-     * 
+     *
      * @see https://github.com/WordPress/gutenberg/issues/53590#issuecomment-2754258168
      * @see https://developer.wordpress.org/block-editor/how-to-guides/enqueueing-assets-in-the-editor/#backward-compatibility-and-known-issues
      */

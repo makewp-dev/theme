@@ -28,6 +28,26 @@ You can put your theme's CSS in `/styles` or, if you prefer Sass, put those file
 
 As with styles, the same pattern is available with `/scripts` and `/src/scripts`.
 
+## Load features
+
+Declare the features you want. Only those files are required and run.
+
+```php
+// functions.php
+<?php
+require_once 'vendor/autoload.php';
+
+\MakeWP\Theme\load( [
+  'build_theme'       => true,
+  'require_functions' => true,
+  'register_blocks'   => true,
+  'enqueue_assets'    => true,
+  'public_site'       => true,
+] );
+```
+
+Omit a key (or set it to `false`) to skip that feature.
+
 ## Features
 
 ### Auto-include all files in `/functions`
@@ -39,7 +59,10 @@ As with styles, the same pattern is available with `/scripts` and `/src/scripts`
 // functions.php
 <?php
 require_once 'vendor/autoload.php';
-\MakeWP\Theme\require_functions();
+
+\MakeWP\Theme\load( [
+  'require_functions' => true,
+] );
 ```
 
 ```php
@@ -50,7 +73,7 @@ echo 'functions/test.php';
 
 You should now see "functions/test.php" in your browser.
 
-### Auto-register blocks in `/blocks`.
+### Auto-register blocks in `/blocks`
 
 **Problem:** Must manually register blocks.
 **Solution:** Read file system and auto-register blocks.
@@ -59,7 +82,10 @@ You should now see "functions/test.php" in your browser.
 // functions.php
 <?php
 require_once 'vendor/autoload.php';
-\MakeWP\Theme\register_blocks();
+
+\MakeWP\Theme\load( [
+  'register_blocks' => true,
+] );
 ```
 
 ```json
@@ -77,7 +103,10 @@ Enqueues all files in `scripts/` and `styles/` in both public site and admin blo
 // functions.php
 <?php
 require_once 'vendor/autoload.php';
-\MakeWP\Theme\enqueue_assets();
+
+\MakeWP\Theme\load( [
+  'enqueue_assets' => true,
+] );
 ```
 
 ### Various modifications to public site
@@ -85,19 +114,27 @@ require_once 'vendor/autoload.php';
 - Don't convert text emoticons to emojis
 - Change excerpt read more link
 
-### Load all features
-
-Honestly not confident this will last.
-Currently loads `public_site()` as well.
-
 ```php
-// functions.php
 <?php
 require_once 'vendor/autoload.php';
-\MakeWP\Theme\all();
+
+\MakeWP\Theme\load( [
+  'public_site' => true,
+] );
 ```
 
-### Build `theme.json` from `js` files (`build_theme.php`)
+### Build `theme.json` from `js` files (`build_theme`)
+
+Registers the WP-CLI `wp makewp build` command when WP-CLI is present.
+
+```php
+<?php
+require_once 'vendor/autoload.php';
+
+\MakeWP\Theme\load( [
+  'build_theme' => true,
+] );
+```
 
 ## Bugs
 

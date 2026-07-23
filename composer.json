@@ -18,7 +18,7 @@
       "MakeWP\\Theme\\": "src/"
     },
     "files": [
-      "src/all.php"
+      "src/load.php"
     ]
   },
   "authors": [

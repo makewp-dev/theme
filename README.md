@@ -71,7 +71,7 @@ require_once 'vendor/autoload.php';
 
 ### Enqueue assets
 
-Enqueues all files in `scripts/` and `styles/`.
+Enqueues all files in `scripts/` and `styles/` in both public site and admin block editor.
 
 ```php
 // functions.php

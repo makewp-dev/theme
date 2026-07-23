@@ -2,14 +2,16 @@
 namespace MakeWP\Theme;
 
 /**
- * require_once() every PHP file in {theme}/functions
+ * `require_once()` every PHP file in `functions/`
  */
 function require_functions()
 {
   $dir_path = get_theme_file_path( '/functions' );
+
   // Silently fail if directory doesn't exist
   if ( ! is_dir( $dir_path ) ) return;
-  // Or if it does..
+  
+  // Or if it does, require each file
   foreach( scandir( $dir_path ) as $filename )
   {
     $file_path = $dir_path . '/' . $filename;
@@ -20,4 +22,4 @@ function require_functions()
       require_once $file_path;
     }
   }
-} 
+}
